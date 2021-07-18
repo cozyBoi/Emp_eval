@@ -79,15 +79,16 @@ int main(){
     //open eval file
 
     struct timespec start, finish, delta;
-	for(i = 0; i < 1024; i+=100){
-		for(j = 0; j < maxNum; j++){
-			if(j % pageNum == 0){
+//	for(i = 0; i < 1024; i+=100){
+	for(i = 0; i < 1024; i++){
+		for(j = 0; j < maxNum; j+=4){
+			//if(j % pageNum == 0){
                 clock_gettime(CLOCK_REALTIME, &start);
 				((char*)(space[i]))[j] = 'b' + (i + j) % 128;
 
                 clock_gettime(CLOCK_REALTIME, &finish);
 				fprintf(fp, "%.8X : %ld.%.9ld\n", i*maxNum + j, delta.tv_sec, delta.tv_nsec);
-			}
+			//}
 		}
 	}
 
