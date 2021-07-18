@@ -20,10 +20,27 @@
 long long maxNum = 16 * 1024 * 1024;
 const int pageNum = 4 * (1<<10);
 
+enum { NS_PER_SECOND = 1000000000 };
+
+void sub_timespec(struct timespec t1, struct timespec t2, struct timespec *td)
+{
+    td->tv_nsec = t2.tv_nsec - t1.tv_nsec;
+    td->tv_sec  = t2.tv_sec - t1.tv_sec;
+    if (td->tv_sec > 0 && td->tv_nsec < 0)
+    {
+        td->tv_nsec += NS_PER_SECOND;
+        td->tv_sec--;
+    }
+    else if (td->tv_sec < 0 && td->tv_nsec > 0)
+    {
+        td->tv_nsec -= NS_PER_SECOND;
+        td->tv_sec++;
+    }
+}
+
 int main(){
 	int i, j;
 	pid_t pid, pid2, pid3;
-	struct timeval s, e, eps;
 	FILE*fp;
 	pid = fork();
 	if(pid == -1) exit(0); //error
@@ -42,7 +59,6 @@ int main(){
 
 	void*space[1024];
 
-	//gettimeofday(&s, NULL);	
 	for(i = 0; i < 1024; i++){
 		space[i] = malloc(maxNum);
 	}
@@ -52,36 +68,33 @@ int main(){
 			((char*)(space[i]))[j] = 'a';
 		}
 	}
+    //make 16GB space per each process
+
 	srand(time(0));
-	char fileName[10];
-//	itoa((long int)getpid(), fileName, 5);
-	fileName[0] = 'a' + (long int)getpid() % 5;
-	fileName[1] = 0;
+	char fileName[10] = {'e', 'v', 'a', 'l'};
+
+	fileName[4] = '0' + (long int)getpid() % 5;
+	fileName[5] = 0;
 	fp = fopen(fileName, "w+");
-	//gettimeofday(&s, NULL);
-	for(i = 0; i < 10; i++){
+    //open eval file
+
+    struct timespec start, finish, delta;
+	for(i = 0; i < 1024; i+=100){
 		for(j = 0; j < maxNum; j++){
 			if(j % pageNum == 0){
-				gettimeofday(&s, NULL);
-				//((char*)(space[i]))[rand()%(pageNum) * 1024] = 'b' + (i + j) % 128;
+                clock_gettime(CLOCK_REALTIME, &start);
 				((char*)(space[i]))[j] = 'b' + (i + j) % 128;
 
-				gettimeofday(&e, NULL);
-				timersub(&e, &s, &eps);
-				fprintf(fp, "%ld elapse time : %ld.%08ld\n", (long int)getpid(), (long int)eps.tv_sec, (long int)eps.tv_usec);
+                clock_gettime(CLOCK_REALTIME, &finish);
+				fprintf(fp, "%.8X : %ld.%.9ld\n", i*maxNum + j, delta.tv_sec, delta.tv_nsec);
 			}
 		}
 	}
 
-	//gettimeofday(&e, NULL);
-	//timersub(&e, &s, &eps);
-	//fprintf(fp, "%ld elapse time : %ld.%08ld\n", (long int)getpid(), (long int)eps.tv_sec, (long int)eps.tv_usec);
-	for(i = 0; i < 10; i++){
+	for(i = 0; i < 1024; i++){
 		free(space[i]);
 	}
-	//gettimeofday(&e, NULL);
-	//timersub(&e, &s, &eps);	
-	//printf("elapse time : %ld.%06ld\n", (long int)eps.tv_sec, (long int)eps.tv_usec);
+
 	if(pid != 0){
 		wait(NULL);
 		wait(NULL);
