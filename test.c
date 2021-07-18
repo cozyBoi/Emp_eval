@@ -89,7 +89,9 @@ int main(){
 		}
 	}
     clock_gettime(CLOCK_REALTIME, &finish);
-	fprintf(fp, "%.8X : %ld.%.9ld\n", i*maxNum + j, delta.tv_sec, delta.tv_nsec);
+    sub_timespec(start, finish, &delta);
+	//fprintf(fp, "%.8X : %ld.%.9ld\n", i*maxNum + j, delta.tv_sec, delta.tv_nsec);
+	fprintf(fp, "%ld.%.9ld\n", delta.tv_sec, delta.tv_nsec);
 
 	for(i = 0; i < 1024; i++){
 		free(space[i]);
