@@ -48,13 +48,14 @@ int main(){
 	if(pid != 0) {
 		//parent
 		pid2 = fork();
-
+/*
 		if(pid2 != 0){
 			pid3 = fork();
 			if(pid3 != 0){
 				fork();
 			}
 		}
+        */
 	}
 
 	void*space[1024];
